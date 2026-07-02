@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nave Espacial Recorrido - Agujeros Negros</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        background-color: black;
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* ===== VIDEO DE FONDO (OPTIMIZADO) ===== */
+    #video-fondo-gaming {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        z-index: -1;
+        pointer-events: none;
+        will-change: transform;
+    }
+
+    /* ===== CÍRCULOS CON AGUJEROS NEGROS ===== */
+    .circulo {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        overflow: hidden;
+        box-sizing: border-box;
+        color: white;
+        font-family: 'Inter', Arial, sans-serif;
+        font-weight: bold;
+        line-height: 1.1;
+        text-shadow: 0 0 3px rgba(0,0,0,0.8);
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        z-index: 2;
+        will-change: transform;
+    }
+
+    .circulo:hover {
+        transform: translate(-50%, -50%) scale(1.25);
+        box-shadow: 0 0 25px rgba(255, 200, 100, 0.9), 0 0 50px rgba(255, 150, 50, 0.5);
+        z-index: 10;
+    }
+
+    .blackhole-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        z-index: 0;
+    }
+
+    .circulo span {
+        position: relative;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .punto-1 { top: 34%; left: 4%;  width: 20px; height: 20px; font-size: 6px; }
+    .punto-2 { top: 28%; left: 14%; width: 10px; height: 10px; font-size: 4px; }
+    .punto-3 { top: 50%; left: 10%; width: 30px; height: 30px; font-size: 7px; }
+
+    .circunferencia-1 { top: 25%; left: 8%;  width: 15px; height: 15px; font-size: 5px; }
+    .circunferencia-2 { top: 33%; left: 19%; width: 6px;  height: 6px; font-size: 3px; }
+    .circunferencia-3 { top: 60%; left: 19%; width: 35px; height: 35px; font-size: 7px; }
+    .circunferencia-4 { top: 70%; left: 28%; width: 45px; height: 45px; font-size: 9px; }
+    .circunferencia-5 { top: 75%; left: 40%; width: 50px; height: 50px; font-size: 10px; }
+    .circunferencia-6 { top: 76%; left: 52%; width: 55px; height: 55px; font-size: 11px; }
+    .circunferencia-7 { top: 77%; left: 62%; width: 60px; height: 60px; font-size: 12px; }
+    .circunferencia-8 { top: 77%; left: 72%; width: 65px; height: 65px; font-size: 13px; }
+
+    .slide-num { font-size: 0.7em; opacity: 0.8; margin-bottom: 1px; }
+    .slide-title { font-size: 0.9em; }
+
+    /* ===== NAVE ESPACIAL (OPTIMIZADO) ===== */
+    .spaceship {
+        position: fixed;
+        font-size: 8px;
+        z-index: 1000;
+        pointer-events: none;
+        transition: all 1.5s ease-in-out;
+        filter: drop-shadow(0 0 10px rgba(255, 200, 100, 0.8));
+        transform: translate(-50%, -50%);
+        will-change: transform, left, top, font-size;
+    }
+
+    .spaceship::after {
+        content: '🚀';
+        display: block;
+    }
+
+    .trail {
+        position: fixed;
+        width: 4px;
+        height: 4px;
+        background: radial-gradient(circle, rgba(255,200,100,0.8), transparent);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 999;
+        animation: fadeOut 1s forwards;
+        will-change: opacity, transform;
+    }
+
+    @keyframes fadeOut {
+        to {
+            opacity: 0;
+            transform: scale(0);
+        }
+    }
+
+    /* ===== MODAL EN PANTALLA COMPLETA ===== */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.95);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        max-width: 100%;
+        background-color: #0a0a0a;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 0;
+        overflow: hidden;
+        box-shadow: none;
+        animation: slideIn 0.3s ease-out;
+        font-family: 'Inter', sans-serif;
+        color: white;
+        transition: background-image 0.5s ease-in-out;
+        will-change: transform;
+    }
+
+    @keyframes slideIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to   { transform: scale(1);    opacity: 1; }
+    }
+
+    .modal-content::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 1;
+    }
+
+    /* ===== LÍNEAS NEÓN DEL MARCO (OPTIMIZADO) ===== */
+    .modal-content .linea {
+        position: absolute;
+        background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #0066ff 100%);
+        z-index: 5;
+        animation: neon-flicker 4s infinite;
+        will-change: opacity;
+    }
+
+    .modal-content .linea-1 {
+        width: 2px; height: 92%;
+        top: 50%; left: 2%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.6), 0 0 40px rgba(0, 153, 255, 0.3);
+    }
+    .modal-content .linea-2 {
+        width: 96%; height: 2px;
+        top: 3%; left: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.6), 0 0 40px rgba(0, 153, 255, 0.3);
+    }
+    .modal-content .linea-3 {
+        width: 96%; height: 2px;
+        top: 97%; left: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.6), 0 0 40px rgba(0, 153, 255, 0.3);
+    }
+    .modal-content .linea-4 {
+        width: 2px; height: 92%;
+        top: 50%; left: 98%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.6), 0 0 40px rgba(0, 153, 255, 0.3);
+    }
+
+    @keyframes neon-flicker {
+        0%, 100% { opacity: 1; }
+        5%, 7%   { opacity: 0.3; }
+        10%      { opacity: 1; }
+        12%, 14% { opacity: 0.5; }
+        15%      { opacity: 1; }
+        50%      { opacity: 0.95; }
+        52%, 54% { opacity: 0.4; }
+        55%      { opacity: 1; }
+    }
+
+    .modal-content .linea::before {
+        content: '';
+        position: absolute;
+        background: linear-gradient(90deg, transparent, #00ffff, transparent);
+        border-radius: 50%;
+        filter: blur(2px);
+        box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    }
+    .modal-content .linea-1::before { width: 4px; height: 40px; left: -1px; animation: charge-vertical 3s ease-in-out infinite; }
+    .modal-content .linea-2::before { width: 40px; height: 4px; top: -1px; animation: charge-horizontal 3s ease-in-out infinite; }
+    .modal-content .linea-3::before { width: 40px; height: 4px; top: -1px; animation: charge-horizontal-reverse 3s ease-in-out infinite; }
+    .modal-content .linea-4::before { width: 4px; height: 40px; left: -1px; animation: charge-vertical-reverse 3s ease-in-out infinite; }
+
+    @keyframes charge-vertical { 0% { top: 0%; opacity: 0; } 10%, 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+    @keyframes charge-horizontal { 0% { left: 0%; opacity: 0; } 10%, 90% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+    @keyframes charge-horizontal-reverse { 0% { left: 100%; opacity: 0; } 10%, 90% { opacity: 1; } 100% { left: 0%; opacity: 0; } }
+    @keyframes charge-vertical-reverse { 0% { top: 100%; opacity: 0; } 10%, 90% { opacity: 1; } 100% { top: 0%; opacity: 0; } }
+
+    /* ===== ESTRELLAS EN ESQUINAS ===== */
+    .modal-corner {
+        position: absolute;
+        font-size: 28px;
+        width: 60px; height: 60px;
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        border: 2px solid rgba(0, 153, 255, 0.3);
+        box-shadow: 0 0 25px rgba(0, 153, 255, 0.5), inset 0 0 18px rgba(0, 153, 255, 0.1);
+        color: #00d4ff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        animation: pulse 3s ease-in-out infinite;
+        user-select: none;
+        will-change: transform;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.1); }
+    }
+
+    .modal-corner.top-left     { top: 3%;  left: 2%; }
+    .modal-corner.top-right    { top: 3%;  right: 2%; }
+    .modal-corner.bottom-left  { bottom: 3%; left: 2%; }
+    .modal-corner.bottom-right { bottom: 3%; right: 2%; }
+
+    /* ===== ESPIRALES DECORATIVAS ===== */
+    .modal-spiral {
+        position: absolute;
+        font-size: 42px;
+        background: linear-gradient(135deg, #ff8102 0%, #ff6b00 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        filter: drop-shadow(0 0 10px rgba(255, 129, 2, 0.6));
+        z-index: 10;
+        user-select: none;
+        transition: transform 0.3s ease;
+        will-change: transform;
+    }
+    .modal-spiral:hover { transform: scale(1.3) rotate(360deg); }
+
+    .modal-spiral.tl { top: 8%;  left: 7%; }
+    .modal-spiral.tr { top: 8%;  right: 7%; transform: rotate(90deg); }
+    .modal-spiral.bl { bottom: 8%; left: 7%; transform: rotate(-90deg); }
+    .modal-spiral.br { bottom: 8%; right: 7%; transform: rotate(180deg); }
+
+    /* ===== CONTENIDO CENTRAL ===== */
+    .modal-slide {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        max-width: 80%;
+        width: 70%;
+        z-index: 15;
+        padding: 80px 60px;
+        background: rgba(10, 10, 10, 0.7);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(0, 153, 255, 0.15);
+    }
+
+    .modal-slide-num {
+        font-size: 18px;
+        font-weight: 400;
+        color: #00d4ff;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
+
+    .modal-slide-title {
+        font-size: 5rem;
+        font-weight: 700;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #ffffff 0%, #00d4ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+    }
+
+    .modal-slide-body {
+        font-size: 1.6rem;
+        font-weight: 300;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.85);
+        letter-spacing: 0.01em;
+    }
+
+    /* Botón cerrar */
+    .modal-close {
+        position: absolute;
+        top: 25px; right: 25px;
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(0, 153, 255, 0.3);
+        color: #00d4ff;
+        font-size: 26px;
+        width: 55px; height: 55px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 20;
+        transition: all 0.2s;
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        will-change: transform;
+    }
+    .modal-close:hover {
+        background: rgba(0, 153, 255, 0.3);
+        transform: scale(1.1);
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.8);
+    }
+
+    /* Botón descargar */
+    .modal-download {
+        position: absolute;
+        bottom: 30px; right: 30px;
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(10px);
+        color: #00d4ff;
+        padding: 14px 26px;
+        border-radius: 30px;
+        border: 1px solid rgba(0, 153, 255, 0.4);
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        z-index: 20;
+        transition: all 0.2s;
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.3);
+        will-change: transform;
+    }
+    .modal-download:hover {
+        background: rgba(0, 153, 255, 0.3);
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.8);
+        transform: translateY(-2px);
+    }
+
+    /* Botones anterior/siguiente */
+    .modal-prev {
+        position: absolute;
+        bottom: 30px; left: 30px;
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(10px);
+        color: #00d4ff;
+        padding: 14px 26px;
+        border-radius: 30px;
+        border: 1px solid rgba(0, 153, 255, 0.4);
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        z-index: 20;
+        transition: all 0.2s;
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.3);
+        cursor: pointer;
+        will-change: transform;
+    }
+    .modal-prev:hover {
+        background: rgba(0, 153, 255, 0.3);
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.8);
+        transform: translateY(-2px);
+    }
+
+    .modal-next {
+        position: absolute;
+        bottom: 30px; left: 50%;
+        transform: translateX(-50%);
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(10px);
+        color: #00d4ff;
+        padding: 14px 26px;
+        border-radius: 30px;
+        border: 1px solid rgba(0, 153, 255, 0.4);
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        z-index: 20;
+        transition: all 0.2s;
+        box-shadow: 0 0 20px rgba(0, 153, 255, 0.3);
+        cursor: pointer;
+        will-change: transform;
+    }
+    .modal-next:hover {
+        background: rgba(0, 153, 255, 0.3);
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.8);
+        transform: translateX(-50%) translateY(-2px);
+    }
+
+    /* Controles de viaje */
+    .controls {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1500;
+        display: flex;
+        gap: 10px;
+    }
+
+    .control-btn {
+        background: rgba(255, 200, 100, 0.2);
+        border: 2px solid rgba(255, 200, 100, 0.6);
+        color: #ffc864;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        transition: all 0.3s;
+        will-change: transform;
+    }
+
+    .control-btn:hover {
+        background: rgba(255, 200, 100, 0.4);
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 200, 100, 0.6);
+    }
+
+    .control-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* ===== CONTROLES DE AUDIO ===== */
+    .audio-contenedor {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .audio-contenedor audio {
+        width: 250px;
+    }
+
+    /* Responsive para pantallas pequeñas */
+    @media (max-width: 768px) {
+        .modal-slide { padding: 40px 25px; max-width: 90%; }
+        .modal-slide-title { font-size: 2.5rem; }
+        .modal-slide-body { font-size: 1.1rem; }
+        .modal-slide-num { font-size: 14px; }
+        .modal-corner { width: 40px; height: 40px; font-size: 18px; }
+        .modal-spiral { font-size: 26px; }
+        .modal-close { width: 45px; height: 45px; font-size: 20px; }
+        .modal-download { padding: 10px 18px; font-size: 13px; }
+        .modal-prev { padding: 10px 18px; font-size: 13px; }
+        .modal-next { padding: 10px 18px; font-size: 13px; }
+    }
+</style>
+
+    <!-- ===== VIDEO DE FONDO (OPTIMIZADO) ===== -->
+    <video muted loop id="video-fondo-gaming" preload="metadata" playsinline>
+        <source src="black-hole 4k   (no edit).mp4" type="video/mp4">
+        Tu navegador no soporta video.
+    </video>
+
+    <!-- ===== CÍRCULOS CON AGUJEROS NEGROS ===== -->
+    <div class="circulo punto-1" data-slide="4" data-file="diapositiva4.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">4</span>
+        <span class="slide-title">Intro</span>
+    </div>
+    <div class="circulo punto-2" data-slide="2" data-file="diapositiva2.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">2</span>
+    </div>
+    <div class="circulo punto-3" data-slide="5" data-file="diapositiva5.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">5</span>
+        <span class="slide-title">Idea</span>
+    </div>
+    <div class="circulo circunferencia-1" data-slide="3" data-file="diapositiva3.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">3</span>
+    </div>
+    <div class="circulo circunferencia-2" data-slide="1" data-file="diapositiva1.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">1</span>
+    </div>
+    <div class="circulo circunferencia-3" data-slide="6" data-file="diapositiva6.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">6</span>
+        <span class="slide-title">Datos</span>
+    </div>
+    <div class="circulo circunferencia-4" data-slide="7" data-file="diapositiva7.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">7</span>
+        <span class="slide-title">Análisis</span>
+    </div>
+    <div class="circulo circunferencia-5" data-slide="8" data-file="diapositiva8.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">8</span>
+        <span class="slide-title">Gráfico</span>
+    </div>
+    <div class="circulo circunferencia-6" data-slide="9" data-file="diapositiva9.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">9</span>
+        <span class="slide-title">Resumen</span>
+    </div>
+    <div class="circulo circunferencia-7" data-slide="10" data-file="diapositiva10.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">10</span>
+        <span class="slide-title">Final</span>
+    </div>
+    <div class="circulo circunferencia-8" data-slide="11" data-file="diapositiva11.pptx">
+        <canvas class="blackhole-canvas"></canvas>
+        <span class="slide-num">11</span>
+        <span class="slide-title">Fin</span>
+    </div>
+
+    <!-- Nave espacial -->
+    <div class="spaceship" id="spaceship"></div>
+
+    <!-- Controles de viaje -->
+    <div class="controls">
+        <button class="control-btn" id="startBtn" onclick="startJourney()">Iniciar Viaje</button>
+        <button class="control-btn" onclick="resetJourney()">Reiniciar</button>
+    </div>
+
+    <!-- ===== SECCIÓN DE AUDIO DE FONDO ===== -->
+    <div class="audio-contenedor">
+        <audio id="audio-fondo" autoplay loop controls>
+            <source src="interstellar-main-theme-extra-extended-soundtrack-by-hans-zimmer_bCgOkxy9.mp3" type="audio/mpeg">
+            Tu navegador no soporta el elemento de audio.
+        </audio>
+    </div>
+
+    <!-- MODAL EN PANTALLA COMPLETA -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content" id="modalContent">
+            <div class="linea linea-1"></div>
+            <div class="linea linea-2"></div>
+            <div class="linea linea-3"></div>
+            <div class="linea linea-4"></div>
+
+            <div class="modal-corner top-left">★</div>
+            <div class="modal-corner top-right">★</div>
+            <div class="modal-corner bottom-left">★</div>
+            <div class="modal-corner bottom-right">★</div>
+
+            <div class="modal-spiral tl">𓍢</div>
+            <div class="modal-spiral tr">𓍢</div>
+            <div class="modal-spiral bl">𓍢</div>
+            <div class="modal-spiral br">𓍢</div>
+
+            <button class="modal-close" id="closeBtn">✕</button>
+
+            <div class="modal-slide">
+                <div class="modal-slide-num" id="modalNum"></div>
+                <div class="modal-slide-title" id="modalTitle"></div>
+                <div class="modal-slide-body" id="modalBody"></div>
+            </div>
+
+            <a class="modal-download" id="modalDownload" download>⬇ Descargar PPT</a>
+            <button class="modal-prev" id="prevBtn">⬅ Anterior</button>
+            <button class="modal-next" id="nextBtn">➡ Siguiente</button>
+        </div>
+    </div>
+
+<script>
+    // ===== CLASE AGUJERO NEGRO (OPTIMIZADO) =====
+    class MiniBlackHole {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d', { alpha: false }); // Optimización: sin alpha
+            this.particles = [];
+            this.stars = [];
+            this.time = 0;
+            this.isVisible = false;
+            this.lastFrameTime = 0;
+            this.frameInterval = 33; // 30fps en lugar de 60fps
+            
+            this.resize();
+            
+            // REDUCIDO: De ~200 a ~40 partículas
+            const particleCount = Math.min(40, Math.floor(this.width * 0.8));
+            for (let i = 0; i < particleCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = this.ringInnerRadius + Math.random() * (this.ringOuterRadius - this.ringInnerRadius);
+                this.particles.push({
+                    angle: angle,
+                    distance: distance,
+                    baseDistance: distance,
+                    speed: (0.02 + Math.random() * 0.03) * (this.ringInnerRadius / distance),
+                    size: 0.5 + Math.random() * 1.5,
+                    brightness: 0.3 + Math.random() * 0.7,
+                    offset: Math.random() * Math.PI * 2,
+                    // CACHE: Pre-calcular seno/coseno
+                    cos: Math.cos(angle),
+                    sin: Math.sin(angle)
+                });
+            }
+            
+            for (let i = 0; i < 5; i++) {
+                this.stars.push({
+                    x: Math.random() * this.width,
+                    y: Math.random() * this.height,
+                    size: Math.random() * 0.6,
+                    brightness: Math.random() * 0.5
+                });
+            }
+            
+            // IntersectionObserver para solo animar cuando es visible
+            this.observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    this.isVisible = entry.isIntersecting;
+                });
+            }, { threshold: 0.1 });
+            
+            this.observer.observe(this.canvas);
+            this.animate();
+        }
+        
+        resize() {
+            const rect = this.canvas.parentElement.getBoundingClientRect();
+            this.width = rect.width;
+            this.height = rect.height;
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            this.centerX = this.width / 2;
+            this.centerY = this.height / 2;
+            this.blackHoleRadius = Math.min(this.width, this.height) * 0.28;
+            this.ringInnerRadius = this.blackHoleRadius * 1.05;
+            this.ringOuterRadius = this.blackHoleRadius * 1.6;
+        }
+        
+        drawAccretionRing() {
+            // OPTIMIZADO: Menos iteraciones (0.08 en lugar de 0.03)
+            for (let angle = 0; angle < Math.PI * 2; angle += 0.08) {
+                const dopplerFactor = 0.4 + 0.6 * Math.cos(angle - this.time * 0.001);
+                
+                // OPTIMIZADO: Menos iteraciones radiales (1 en lugar de 0.5)
+                for (let r = this.ringInnerRadius; r < this.ringOuterRadius; r += 1) {
+                    const x = this.centerX + Math.cos(angle) * r;
+                    const y = this.centerY + Math.sin(angle) * r * 0.95;
+                    
+                    const distanceFromCenter = r - this.ringInnerRadius;
+                    const ringIntensity = Math.sin((distanceFromCenter / (this.ringOuterRadius - this.ringInnerRadius)) * Math.PI);
+                    const intensity = ringIntensity * dopplerFactor;
+                    
+                    if (intensity > 0.1) {
+                        const alpha = intensity * 0.5;
+                        const r_color = 255;
+                        const g_color = Math.floor(180 + 75 * intensity);
+                        const b_color = Math.floor(80 + 70 * intensity);
+                        
+                        this.ctx.beginPath();
+                        this.ctx.arc(x, y, 1, 0, Math.PI * 2);
+                        this.ctx.fillStyle = `rgba(${r_color}, ${g_color}, ${b_color}, ${alpha})`;
+                        this.ctx.fill();
+                    }
+                }
+            }
+        }
+        
+        drawPhotonRing() {
+            const gradient = this.ctx.createRadialGradient(
+                this.centerX, this.centerY, this.blackHoleRadius * 0.95,
+                this.centerX, this.centerY, this.blackHoleRadius * 1.15
+            );
+            
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+            gradient.addColorStop(0.3, 'rgba(255, 220, 150, 0.1)');
+            gradient.addColorStop(0.5, 'rgba(255, 200, 100, 0.4)');
+            gradient.addColorStop(0.7, 'rgba(255, 180, 80, 0.6)');
+            gradient.addColorStop(1, 'rgba(255, 200, 100, 0)');
+            
+            this.ctx.beginPath();
+            this.ctx.arc(this.centerX, this.centerY, this.blackHoleRadius * 1.15, 0, Math.PI * 2);
+            this.ctx.fillStyle = gradient;
+            this.ctx.fill();
+        }
+        
+        drawBlackHole() {
+            this.ctx.beginPath();
+            this.ctx.arc(this.centerX, this.centerY, this.blackHoleRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = '#000000';
+            this.ctx.fill();
+            
+            this.drawPhotonRing();
+            this.drawAccretionRing();
+            
+            this.particles.forEach(particle => {
+                particle.angle += particle.speed;
+                particle.distance = particle.baseDistance + Math.sin(this.time * 0.002 + particle.offset) * 1.5;
+                
+                if (particle.distance < this.ringInnerRadius - 3) {
+                    particle.distance = this.ringInnerRadius + Math.random() * (this.ringOuterRadius - this.ringInnerRadius);
+                    particle.baseDistance = particle.distance;
+                }
+                
+                const dopplerEffect = 0.5 + 0.5 * Math.cos(particle.angle - this.time * 0.001);
+                const brightness = particle.brightness * dopplerEffect;
+                
+                const r = 255;
+                const g = Math.floor(200 + 55 * brightness);
+                const b = Math.floor(100 + 50 * brightness);
+                const alpha = 0.4 + 0.6 * brightness;
+                
+                // OPTIMIZADO: Usar cos/sin cacheados
+                const x = this.centerX + Math.cos(particle.angle) * particle.distance;
+                const y = this.centerY + Math.sin(particle.angle) * particle.distance * 0.95;
+                
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, particle.size, 0, Math.PI * 2);
+                this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                this.ctx.fill();
+            });
+        }
+        
+        animate(timestamp = 0) {
+            // OPTIMIZADO: Solo animar si es visible y controlar framerate
+            if (!this.isVisible) {
+                requestAnimationFrame((t) => this.animate(t));
+                return;
+            }
+            
+            // Control de framerate (30fps)
+            if (timestamp - this.lastFrameTime < this.frameInterval) {
+                requestAnimationFrame((t) => this.animate(t));
+                return;
+            }
+            this.lastFrameTime = timestamp;
+            
+            this.time += 16;
+            
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.ctx.fillStyle = '#000000';
+            this.ctx.fillRect(0, 0, this.width, this.height);
+            
+            this.stars.forEach(star => {
+                this.ctx.beginPath();
+                this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+                this.ctx.fill();
+            });
+            
+            this.drawBlackHole();
+            
+            requestAnimationFrame((t) => this.animate(t));
+        }
+    }
+
+    // Inicializar agujeros negros
+    document.querySelectorAll('.circulo').forEach(circulo => {
+        const canvas = circulo.querySelector('.blackhole-canvas');
+        new MiniBlackHole(canvas);
+    });
+
+    // ===== CONTENIDO DE DIAPOSITIVAS =====
+    const slides = {
+        1:  { title: "Introducción", body: "Bienvenidos a la presentación. Aquí comienza el recorrido." },
+        2:  { title: "Contexto", body: "Información general del proyecto." },
+        3:  { title: "La Idea", body: "Presentamos la idea principal." },
+        4:  { title: "Antecedentes", body: "Datos previos relevantes." },
+        5:  { title: "Detalle", body: "Detalles específicos del tema." },
+        6:  { title: "Datos", body: "Aquí van los datos recolectados." },
+        7:  { title: "Análisis", body: "Interpretación de los resultados." },
+        8:  { title: "Gráfico", body: "Visualización de los datos." },
+        9:  { title: "Resumen", body: "Puntos clave a recordar." },
+        10: { title: "Conclusiones", body: "Reflexiones finales." },
+        11: { title: "Fin", body: "¡Gracias por su atención!" }
+    };
+
+    // 🖼️ IMÁGENES DE FONDO PARA CADA DIAPOSITIVA
+    const slideImages = {
+        1:  "url('imagen-1.png')",
+        2:  "url('imagen-2.png')",
+        3:  "url('imagen-3.png')",
+        4:  "url('imagen-4.png')",
+        5:  "url('imagen-5.png')",
+        6:  "url('imagen-6.png')",
+        7:  "url('imagen-7.png')",
+        8:  "url('imagen-8.png')",
+        9:  "url('imagen-9.png')",
+        10: "url('imagen-10.png')",
+        11: "url('imagen-11.png')",
+    };
+
+    // ===== NAVEGACIÓN DE LA NAVE =====
+    const circleSequence = [
+        { num: 1,  selector: '.circunferencia-2', size: 6  },
+        { num: 2,  selector: '.punto-2',          size: 10 },
+        { num: 3,  selector: '.circunferencia-1', size: 15 },
+        { num: 4,  selector: '.punto-1',          size: 20 },
+        { num: 5,  selector: '.punto-3',          size: 30 },
+        { num: 6,  selector: '.circunferencia-3', size: 35 },
+        { num: 7,  selector: '.circunferencia-4', size: 45 },
+        { num: 8,  selector: '.circunferencia-5', size: 50 },
+        { num: 9,  selector: '.circunferencia-6', size: 55 },
+        { num: 10, selector: '.circunferencia-7', size: 60 },
+        { num: 11, selector: '.circunferencia-8', size: 65 }
+    ];
+
+    const spaceship = document.getElementById('spaceship');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+    const modalNum = document.getElementById('modalNum');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalDownload = document.getElementById('modalDownload');
+    const closeBtn = document.getElementById('closeBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let currentCircleIndex = 0;
+    let isJourneyActive = false;
+    let isMoving = false;
+    let trailCount = 0;
+    const MAX_TRAILS = 10; // OPTIMIZADO: Limitar trails
+
+    function createTrail(x, y) {
+        // OPTIMIZADO: Limitar número de trails
+        if (trailCount >= MAX_TRAILS) return;
+        
+        const trail = document.createElement('div');
+        trail.className = 'trail';
+        trail.style.left = x + 'px';
+        trail.style.top = y + 'px';
+        document.body.appendChild(trail);
+        trailCount++;
+        
+        setTimeout(() => {
+            trail.remove();
+            trailCount--;
+        }, 1000);
+    }
+
+    function moveToCircle(index, autoOpenModal = true) {
+        if (index >= circleSequence.length) {
+            finishJourney();
+            return;
+        }
+
+        isMoving = true;
+        const circleData = circleSequence[index];
+        const circle = document.querySelector(circleData.selector);
+        
+        if (circle) {
+            const rect = circle.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const minShipSize = 3;
+            const maxShipSize = 50;
+            const sizeIncrement = (maxShipSize - minShipSize) / (circleSequence.length - 1);
+            const newShipSize = minShipSize + (index * sizeIncrement);
+
+            const currentRect = spaceship.getBoundingClientRect();
+            if (currentRect.width > 0) {
+                createTrail(currentRect.left + currentRect.width/2, currentRect.top + currentRect.height/2);
+            }
+
+            spaceship.style.left = centerX + 'px';
+            spaceship.style.top = centerY + 'px';
+            spaceship.style.fontSize = newShipSize + 'px';
+            
+            if (index > 0) {
+                const prevCircle = document.querySelector(circleSequence[index-1].selector);
+                const prevRect = prevCircle.getBoundingClientRect();
+                const angle = Math.atan2(centerY - (prevRect.top + prevRect.height/2), 
+                                        centerX - (prevRect.left + prevRect.width/2)) * 180 / Math.PI;
+                spaceship.style.transform = `translate(-50%, -50%) rotate(${angle + 45}deg)`;
+            }
+
+            circle.style.boxShadow = '0 0 20px rgba(255, 200, 100, 0.9)';
+            setTimeout(() => {
+                circle.style.boxShadow = '';
+            }, 1000);
+
+            setTimeout(() => {
+                isMoving = false;
+                if (autoOpenModal) {
+                    openModalForCircle(index);
+                }
+            }, 1500);
+        }
+    }
+
+    function openModalForCircle(index) {
+        const circleData = circleSequence[index];
+        const circle = document.querySelector(circleData.selector);
+        const slideNum = circle.getAttribute('data-slide');
+        const slideFile = circle.getAttribute('data-file');
+        const data = slides[slideNum];
+
+        modalContent.style.backgroundImage = slideImages[slideNum];
+        modalNum.textContent = `Diapositiva ${slideNum} de 11`;
+        modalTitle.textContent = data.title;
+        modalBody.textContent = data.body;
+        modalDownload.href = slideFile;
+        
+        if (index > 0) {
+            prevBtn.style.display = 'block';
+        } else {
+            prevBtn.style.display = 'none';
+        }
+        
+        if (index < circleSequence.length - 1) {
+            nextBtn.style.display = 'block';
+        } else {
+            nextBtn.style.display = 'none';
+        }
+        
+        modal.classList.add('active');
+        
+        // OPTIMIZADO: Pausar video cuando modal está abierto
+        const video = document.getElementById('video-fondo-gaming');
+        if (video) video.pause();
+    }
+
+    function startJourney() {
+        if (isJourneyActive) return;
+        
+        isJourneyActive = true;
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('startBtn').textContent = '🚀 Viajando...';
+
+        // OPTIMIZADO: Iniciar video solo cuando comienza el viaje
+        const video = document.getElementById('video-fondo-gaming');
+        if (video) video.play().catch(() => {});
+
+        moveToCircle(currentCircleIndex);
+    }
+
+    function nextSlide() {
+        if (isMoving) return;
+        
+        modal.classList.remove('active');
+        
+        currentCircleIndex++;
+        
+        if (currentCircleIndex < circleSequence.length) {
+            moveToCircle(currentCircleIndex);
+        } else {
+            finishJourney();
+        }
+    }
+
+    function prevSlide() {
+        if (isMoving) return;
+        if (currentCircleIndex <= 0) return;
+        
+        modal.classList.remove('active');
+        
+        currentCircleIndex--;
+        
+        moveToCircle(currentCircleIndex);
+    }
+
+    function resetJourney() {
+        currentCircleIndex = 0;
+        isJourneyActive = false;
+        isMoving = false;
+        
+        spaceship.style.left = '-100px';
+        spaceship.style.top = '-100px';
+        spaceship.style.fontSize = '8px';
+        
+        modal.classList.remove('active');
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('startBtn').textContent = '🚀 Iniciar Viaje';
+        
+        // OPTIMIZADO: Pausar video al reiniciar
+        const video = document.getElementById('video-fondo-gaming');
+        if (video) video.pause();
+    }
+
+    function finishJourney() {
+        isJourneyActive = false;
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('startBtn').textContent = '🚀 Viaje Completo';
+        
+        spaceship.style.filter = 'drop-shadow(0 0 30px rgba(255, 200, 100, 1))';
+        setTimeout(() => {
+            spaceship.style.filter = 'drop-shadow(0 0 10px rgba(255, 200, 100, 0.8))';
+        }, 500);
+        
+        // OPTIMIZADO: Pausar video al finalizar
+        const video = document.getElementById('video-fondo-gaming');
+        if (video) video.pause();
+    }
+
+    // Abrir modal al hacer clic en cualquier círculo
+    document.querySelectorAll('.circulo').forEach(circulo => {
+        circulo.addEventListener('click', () => {
+            const slideNum = circulo.getAttribute('data-slide');
+            const slideFile = circulo.getAttribute('data-file');
+            const data = slides[slideNum];
+
+            modalContent.style.backgroundImage = slideImages[slideNum];
+            modalNum.textContent = `Diapositiva ${slideNum} de 11`;
+            modalTitle.textContent = data.title;
+            modalBody.textContent = data.body;
+            modalDownload.href = slideFile;
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            
+            modal.classList.add('active');
+            
+            // OPTIMIZADO: Pausar video cuando modal está abierto
+            const video = document.getElementById('video-fondo-gaming');
+            if (video) video.pause();
+        });
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        // OPTIMIZADO: Reanudar video cuando modal se cierra
+        const video = document.getElementById('video-fondo-gaming');
+        if (video && isJourneyActive) video.play().catch(() => {});
+    });
+    
+    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', nextSlide);
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+            const video = document.getElementById('video-fondo-gaming');
+            if (video && isJourneyActive) video.play().catch(() => {});
+        }
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            modal.classList.remove('active');
+            const video = document.getElementById('video-fondo-gaming');
+            if (video && isJourneyActive) video.play().catch(() => {});
+        }
+        if (e.key === 'ArrowLeft' && modal.classList.contains('active')) prevSlide();
+        if (e.key === 'ArrowRight' && modal.classList.contains('active')) nextSlide();
+    });
+
+    window.addEventListener('load', () => {
+        spaceship.style.left = '-100px';
+        spaceship.style.top = '-100px';
+    });
+
+    // Redimensionar canvas al cambiar tamaño de ventana
+    window.addEventListener('resize', () => {
+        document.querySelectorAll('.circulo').forEach(circulo => {
+            const canvas = circulo.querySelector('.blackhole-canvas');
+            const rect = circulo.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        });
+    });
+</script>
+</body>
+</html>
