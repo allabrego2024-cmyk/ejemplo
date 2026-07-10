@@ -52,9 +52,7 @@
       overflow-x: hidden;
     }
 
-    /* ========================================= */
-    /* --- PAGINA 1: ESTILOS LANDING (VR) --- */
-    /* ========================================= */
+  
     #landing-page {
       position: fixed;
       top: 0;
@@ -180,9 +178,7 @@
       .landing-title { font-size: 2.5rem; }
       .landing-subtitle { font-size: 1.2rem; }
     }
-    /* ---------------------------------------- */
-
-    /* --- ESTILOS EXCLUSIVOS MODO VENDEDOR --- */
+  
     .solo-vendedor {
       display: none !important;
     }
@@ -304,7 +300,7 @@
     .card.is-agotado .card-img {
       opacity: 0.5;
     }
-    /* ---------------------------------------- */
+   
 
     header {
       background: var(--card-bg);
@@ -734,9 +730,7 @@
 </head>
 <body>
 
-  <!-- ========================================= -->
-  <!-- PAGINA 1: LANDING (ESTILO REALIDAD VIRTUAL) -->
-  <!-- ========================================= -->
+
   <div id="landing-page">
     <div class="landing-video-container">
       <video autoplay muted loop playsinline>
@@ -746,7 +740,8 @@
     </div>
     <div class="landing-panel">
       <div class="landing-text-content">
-        <h1 class="landing-title">Meanten tu inventario al <dialog></dialog></h1>
+        <h1 class="landing-title">Meanten tu inventario al
+          <br> dia <dialog></dialog></h1>
         <h2 class="landing-subtitle">Crea, edita, agrega y borra</h2>
         <p class="landing-description">todo en un solo lugar, "está en mantenimiendo las seccion de redes sociales"</p>
         <button class="landing-btn-avanzar" onclick="irAPagina2()">
@@ -760,9 +755,7 @@
     </div>
   </div>
 
-  <!-- ========================================= -->
-  <!-- PAGINA 2: CATALOG (TU CÓDIGO ORIGINAL) -->
-  <!-- ========================================= -->
+
   <div id="catalog-page" style="display: none;">
     <header>
       <div class="nav-container">
@@ -966,7 +959,7 @@
 
     <footer>
       <p>© <span id="year"></span> 📦 Tu Catálogo. Todos los productos frescos y seleccionados.</p>
-      <p>📍 [Tu Ciudad] • 📞 <a href="tel:+521234567890">+52 1 234 567 890</a></p>
+      <p>📍 telefono • 📞 <a href="+507 6745-4652">+507 6745-4652</a></p>
       
       <div class="social-links">
         <a href="" class="social-link" target="_blank">📸 Instagram</a>
@@ -981,29 +974,29 @@
   </div>
 
   <script>
-    // --- TRANSICIÓN ENTRE PÁGINAS ---
+   
     function irAPagina2() {
       const landing = document.getElementById('landing-page');
       const catalog = document.getElementById('catalog-page');
       const landingVideo = landing.querySelector('video');
       
-      // Iniciar animación de salida
+     
       landing.classList.add('hidden');
       
-      // Pausar video de la landing para ahorrar recursos
+     
       if (landingVideo) {
         landingVideo.pause();
       }
       
-      // Mostrar catálogo al terminar la transición
+ 
       setTimeout(() => {
         landing.style.display = 'none';
         catalog.style.display = 'block';
         window.scrollTo(0, 0);
-      }, 800); // Debe coincidir con la duración del CSS (0.8s)
+      }, 800);
     }
 
-    // --- LÓGICA ORIGINAL DEL CATÁLOGO ---
+   
     const products = {
       1: { name: "Manzana Roja", category: "🍎 Fruta", price: 9.90, unit: "kg", desc: "Crujiente, dulce y perfecta para snacks o postres. Cultivo local sin pesticidas. Rica en fibra y antioxidantes.", img: "https://placehold.co/600x400/ef4444/ffffff?text=🍎+Manzana+Roja", stock: 20, section: "frutas", pines: [] },
       2: { name: "Plátano Orgánico", category: "🍎 Fruta", price: 7.50, unit: "kg", desc: "Maduración natural, rico en potasio. Ideal para licuados, postres o comer solo. Cultivado sin químicos.", img: "https://placehold.co/600x400/f97316/ffffff?text=🍌+Plátano", stock: 15, section: "frutas", pines: [] },
